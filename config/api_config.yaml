@@ -1,0 +1,7 @@
+apis:
+  provider_category:
+    endpoint: 'http://localhost:8000/api/provider_category'
+    method: 'POST'
+  product:
+    endpoint: 'http://localhost:8000/api/products'
+    method: 'GET'
