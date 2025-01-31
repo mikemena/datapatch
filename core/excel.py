@@ -1,8 +1,9 @@
-# core/excel.py
 import pandas as pd
 from datetime import datetime
+from pathlib import Path
+from typing import Union
 
-def read_excel(filepath: str) -> pd.DataFrame:
+def read_excel(filepath: Union[str, Path]) -> pd.DataFrame:
     """
     Reads an Excel file and adds tracking columns for API responses.
 
@@ -28,14 +29,16 @@ def read_excel(filepath: str) -> pd.DataFrame:
 
     return df
 
-def save_results(df: pd.DataFrame, original_path: str):
+def save_results(df: pd.DataFrame, original_path: Union[str, Path]):
     """Save a DataFrame to an Excel file."""
 
     # Generate timestamp
     timestamp = pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')
 
     # Create a new file name with timestamp
-    output_path = f"{original_path.rsplit('.', 1)[0]}_{timestamp}_results.xlsx"
+    output_path = original_path.parent / f"{original_path.stem}_{timestamp}_results{original_path.suffix}"
 
     # Save to excel
     df.to_excel(output_path, index=False)
+
+    return output_path

@@ -4,3 +4,5 @@ python-dotenv # for .env
 requests # for API
 pyyaml # for YAML
 inquirer # for CLI
+fastapi  # for API
+uvicorn # for API

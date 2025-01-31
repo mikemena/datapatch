@@ -1,7 +1,8 @@
 from pathlib import Path
 import inquirer
-from core.excel import read_excel
+from core.excel import read_excel, save_results
 from patches.base_patch import BasePatch
+from core.api import APIClient
 import yaml
 from typing import Dict, Type
 import importlib
@@ -67,15 +68,36 @@ def main():
         patch_class = patch_types[answers['patch_type']]
         patch = patch_class(str(selected_file))
 
+        # Initialize API client
+        api_client = APIClient()
+
         # Read the Excel file
         df = read_excel(str(selected_file))
         print(f"Processing {len(df)} rows from {selected_file}")
 
-        # Process each row (just print for now)
+# Process each row and call API
         for index, row in df.iterrows():
-            payload = patch.generate_payload(row)
-            print(f"Generated payload for row {index + 1}: {payload}")
-            # TODO: Call API and update tracking columns
+            try:
+                # Generate payload
+                payload = patch.generate_payload(row)
+                print(f"Generated payload for row {index + 1}: {payload}")
+
+                # Call API
+                response = api_client.call_api(answers['patch_type'], payload=payload)
+
+                # Update tracking columns
+                df.at[index, 'api_response'] = str(response)
+                df.at[index, 'api_status'] = response.get('status', 'unknown')
+                df.at[index, 'error_details'] = None
+
+            except Exception as e:
+                print(f"Error processing row {index + 1}: {str(e)}")
+                df.at[index, 'api_status'] = 'error'
+                df.at[index, 'error_details'] = str(e)
+
+        # Save updated Excel file
+        save_results(df, selected_file)
+        print("Processing completed successfully!")
 
     except Exception as e:
         print(f"An error occurred: {e}")
